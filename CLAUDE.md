@@ -38,93 +38,130 @@ Build a modern movie and TV show information application combining Go backend AP
 
 ```
 movie-api/
-├── internal/             # Go backend
-│   ├── config/          # Configuration management
-│   ├── models/          # Data models
-│   ├── services/        # Business logic (TMDb client)
-│   ├── handlers/        # HTTP handlers
-│   ├── middleware/      # HTTP middleware
-│   └── utils/          # Utilities
-├── cmd/server/         # Main application entry
-└── frontend/           # React frontend
-    └── src/
-        ├── app/        # Application layer (store, router)
-        ├── features/   # Feature-based modules
-        ├── components/ # Shared components
-        ├── hooks/      # Custom hooks
-        ├── stores/     # Redux state management
-        ├── types/      # TypeScript definitions
-        └── utils/      # Utilities
+├── backend/              # Go backend API
+│   ├── main.go          # Application entry point
+│   ├── go.mod           # Go module definition
+│   ├── Dockerfile       # Backend container config
+│   └── internal/        # Internal packages
+│       ├── config/      # Configuration management
+│       ├── models/      # Data models
+│       ├── services/    # Business logic (TMDb client)
+│       ├── handlers/    # HTTP handlers
+│       ├── middleware/  # HTTP middleware
+│       └── utils/       # Utilities
+├── frontend/            # React frontend
+│   ├── Dockerfile       # Frontend container config
+│   └── src/
+│       ├── app/         # Application layer (store, router)
+│       ├── features/    # Feature-based modules
+│       ├── components/  # Shared components
+│       ├── hooks/       # Custom hooks
+│       ├── stores/      # Redux state management
+│       ├── types/       # TypeScript definitions
+│       └── utils/       # Utilities
+├── compose.yaml         # Docker Compose configuration
+├── Makefile            # Development commands
+└── .env.example        # Environment variables template
 ```
 
 ## Development Commands
 
 ### Project Setup
 ```bash
-# Initialize Go module
-go mod init github.com/takeshi-arihori/movie-api
-
-# Create backend structure
-mkdir -p internal/{config,models,services,handlers,middleware,utils}
-mkdir -p cmd/server
-
-# Setup frontend
-cd frontend
-npm create vite@latest . -- --template react-ts
-npm install @mui/material @emotion/react @emotion/styled @reduxjs/toolkit react-redux react-router-dom @tanstack/react-query react-hook-form @hookform/resolvers zod axios
-npm install -D tailwindcss postcss autoprefixer @types/react @types/react-dom eslint @typescript-eslint/eslint-plugin prettier eslint-config-prettier
+# Clone and setup environment
+git clone https://github.com/takeshi-arihori/movie-api.git
+cd movie-api
+cp .env.example .env
+# Edit .env with your TMDb API key
 ```
 
-### Development Server
+### Docker Development Environment
 ```bash
-# Backend
-go run main.go
-
-# Frontend
-cd frontend && npm run dev
-
-# Both (with Makefile)
+# Start all services (recommended)
 make dev
+# or
+docker compose up -d
+
+# View logs
+make logs
+# or
+docker compose logs -f
+
+# Stop all services
+make down
+# or
+docker compose down
+```
+
+### Individual Service Management
+```bash
+# Start specific services
+docker compose up backend postgres redis
+docker compose up frontend
+
+# Restart services
+docker compose restart backend
+docker compose restart frontend
+
+# Access containers
+docker compose exec backend sh
+docker compose exec frontend sh
+docker compose exec postgres psql -U developer -d movieapi
 ```
 
 ### Testing
 ```bash
-# Go backend tests
-go test ./...
-go test -cover ./...
-go test -bench=. ./...
+# Backend tests (in container)
+docker compose exec backend go test ./...
+docker compose exec backend go test -cover ./...
 
-# Frontend tests
-cd frontend && npm run test
-cd frontend && npm run test:e2e
-cd frontend && npm run type-check
+# Frontend tests (in container)
+docker compose exec frontend npm test
+docker compose exec frontend npm run test:e2e
+
+# Local testing (if Go/Node installed)
+cd backend && go test ./...
+cd frontend && npm test
 ```
 
 ### Build & Deploy
 ```bash
-# Frontend build
-cd frontend && npm run build
+# Build all services
+make build
+# or
+docker compose build
 
-# Backend build
-go build -o movie-api main.go
-
-# Docker (development)
-docker-compose up -d
+# Deploy to production
+make deploy
+# Deploys backend to Fly.io and frontend to Vercel
 ```
 
 ## Environment Configuration
 
-### Environment Variables
+### Root Environment Variables (.env)
 ```bash
-# Backend (.env)
-PORT=8080
+# TMDb API (required)
 TMDB_API_KEY=your_tmdb_api_key_here
-TMDB_BASE_URL=https://api.themoviedb.org/3
-CACHE_ENABLED=true
-LOG_LEVEL=info
 
-# Frontend (frontend/.env)
-VITE_API_BASE_URL=http://localhost:8080/api/v1
+# Database credentials
+POSTGRES_DB=movieapi
+POSTGRES_USER=developer
+POSTGRES_PASSWORD=password
+
+# Security
+JWT_SECRET=your_jwt_secret_here
+
+# Environment
+ENV=development
+```
+
+### Docker Service URLs
+```bash
+# Frontend: http://localhost:3005
+# Backend API: http://localhost:8802/api/v1
+# Database Admin: http://localhost:8080
+# PostgreSQL: localhost:5435
+# Redis: localhost:6379
 ```
 
 ## Key API Endpoints
@@ -152,18 +189,18 @@ VITE_API_BASE_URL=http://localhost:8080/api/v1
 ## Implementation Priority
 
 ### Phase 1: Backend Core (High Priority)
-- Configuration management (`internal/config/`)
-- TMDb API client (`internal/services/tmdb_client.go`)
-- Data models (`internal/models/`)
+- Configuration management (`backend/internal/config/`)
+- TMDb API client (`backend/internal/services/tmdb_client.go`)
+- Data models (`backend/internal/models/`)
 - Search endpoint (`/api/v1/search`)
 - Detail endpoints (`/api/v1/movies/{id}`, `/api/v1/tv/{id}`)
 
 ### Phase 2: Frontend Foundation (Medium Priority)
-- React environment setup (Vite + TypeScript)
-- Redux store configuration (`src/app/store.ts`)
-- API client (`src/lib/api.ts`)
-- Layout components (`src/components/layout/`)
-- Search feature (`src/features/search/`)
+- React environment setup (`frontend/` with Vite + TypeScript)
+- Redux store configuration (`frontend/src/app/store.ts`)
+- API client (`frontend/src/lib/api.ts`)
+- Layout components (`frontend/src/components/layout/`)
+- Search feature (`frontend/src/features/search/`)
 
 ### Phase 3: Extended Features (Low Priority)
 - Review/rating system (`/api/v1/reviews`)

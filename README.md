@@ -3,6 +3,11 @@
 Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作品検索、詳細情報、キャスト情報、レビュー、トレンド情報など包括的な機能を提供します。
 
 ![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![MUI](https://img.shields.io/badge/MUI-5.0-007FFF?style=for-the-badge&logo=mui&logoColor=white)
+![Redux](https://img.shields.io/badge/Redux-5.0-764ABC?style=for-the-badge&logo=redux&logoColor=white)
 ![TMDb](https://img.shields.io/badge/TMDb-API-01b4e4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
@@ -13,13 +18,14 @@ Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作�
 - **⭐ レビュー・評価**: TMDbレビューと独自レビュー投稿機能
 - **🎭 キャスト・スタッフ**: 出演者・制作陣の詳細情報と出演作品履歴
 - **🔥 トレンド・おすすめ**: 人気作品、類似作品、パーソナライズ推薦
-- **💻 デモアプリ**: API機能を体験できるレスポンシブWebアプリケーション
+- **💻 デモアプリ**: React19ベースのモダンWebアプリケーション
 
 ## 🚀 クイックスタート
 
 ### 必要な環境
 
 - **Go**: 1.24
+- **Node.js**: 20.0以上
 - **TMDb API**: Read Access Token（無料取得可能）
 - **Git**: バージョン管理
 
@@ -30,15 +36,28 @@ Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作�
 git clone https://github.com/takeshi-arihori/movie-api.git
 cd movie-api
 
-# 依存関係のインストール
+# バックエンド依存関係のインストール
 go mod download
+
+# フロントエンド依存関係のインストール
+cd frontend
+npm install
 
 # 環境変数の設定
 cp .env.example .env
 # .envファイルにTMDb APIキーを設定してください
 
-# サーバー起動
+# サーバー起動（開発環境）
+cd ..
+make dev
+
+# または個別に起動
+# バックエンド
 go run main.go
+
+# フロントエンド（別ターミナル）
+cd frontend
+npm run dev
 ```
 
 ### 基本的な使用例
@@ -57,9 +76,9 @@ curl http://localhost:8080/api/v1/movies/372058
 curl "http://localhost:8080/api/v1/trending?media_type=movie&time_window=week"
 ```
 
-### デモアプリケーション
+### Webアプリケーション
 
-サーバー起動後、ブラウザで `http://localhost:8080` を開いてデモアプリをお試しください。
+フロントエンド開発サーバー起動後、ブラウザで `http://localhost:3000` を開いてModern Reactアプリをお試しください。
 
 ## 📖 API仕様
 
@@ -107,22 +126,29 @@ curl "http://localhost:8080/api/v1/trending?media_type=movie&time_window=week"
 ## 🛠️ 技術スタック
 
 ### バックエンド
-- **言語**: Go 1.21
+- **言語**: Go 1.24
 - **フレームワーク**: net/http, gorilla/mux
 - **外部API**: The Movie Database (TMDb) API v3
 - **ミドルウェア**: CORS, ログ機能, エラーハンドリング
 
 ### フロントエンド
-- **基本技術**: HTML5, CSS3, JavaScript (ES6+)
-- **UI Framework**: Bootstrap 5
-- **アーキテクチャ**: SPA (Single Page Application)
+- **言語**: TypeScript 5.0+
+- **フレームワーク**: React 19
+- **スタイリング**: Tailwind CSS 4.0
+- **UIライブラリ**: Material-UI (MUI) 5.0
+- **状態管理**: Redux Toolkit + RTK Query
+- **ルーティング**: React Router v6
+- **フォーム**: React Hook Form + Zod
+- **ビルドツール**: Vite
+- **パッケージマネージャー**: npm
 
 ### アーキテクチャ
 - **設計パターン**: Clean Architecture, Dependency Injection
 - **API設計**: RESTful API
 - **データ形式**: JSON
-- **キャッシュ**: インメモリキャッシュ
+- **キャッシュ**: Redis (バックエンド), RTK Query (フロントエンド)
 - **ログ**: 構造化ログ
+- **認証**: JWT + Cookie
 
 ## 📁 プロジェクト構成
 
@@ -132,6 +158,7 @@ movie-api/
 ├── 📄 go.mod                   # Go モジュール定義
 ├── 📄 go.sum                   # 依存関係のハッシュ
 ├── 📄 .env.example             # 環境変数設定例
+├── 📄 Makefile                 # ビルド・開発用コマンド
 ├── 📄 README.md                # プロジェクト概要
 ├── 📄 README.github.md         # 開発フロー・ブランチ戦略
 ├── 📄 LICENSE                  # ライセンス
@@ -180,34 +207,86 @@ movie-api/
 │       ├── 📄 validation.go    # バリデーション
 │       └── 📄 utils_test.go
 │
-├── 📂 web/                     # フロントエンド
-│   ├── 📂 static/              # 静的ファイル
-│   │   ├── 📂 css/
-│   │   │   └── 📄 style.css
-│   │   ├── 📂 js/
-│   │   │   ├── 📄 app.js       # メインアプリケーション
-│   │   │   └── 📄 api.js       # APIクライアント
+├── 📂 frontend/                # React フロントエンド
+│   ├── 📄 package.json         # npm 依存関係
+│   ├── 📄 tsconfig.json        # TypeScript設定
+│   ├── 📄 vite.config.ts       # Vite設定
+│   ├── 📄 tailwind.config.js   # Tailwind CSS設定
+│   ├── 📄 .eslintrc.js         # ESLint設定
+│   ├── 📄 .prettierrc          # Prettier設定
+│   │
+│   ├── 📂 public/              # 静的ファイル
+│   │   ├── 📄 index.html
 │   │   └── 📂 images/
 │   │
-│   └── 📂 templates/           # HTMLテンプレート
-│       └── 📄 index.html       # メインページ
+│   └── 📂 src/                 # ソースコード
+│       ├── 📄 main.tsx         # アプリケーションエントリーポイント
+│       ├── 📄 App.tsx          # メインアプリケーション
+│       ├── 📄 vite-env.d.ts    # Vite型定義
+│       │
+│       ├── 📂 app/             # アプリケーションレイヤー
+│       │   ├── 📂 routes/      # ページルート
+│       │   ├── 📄 store.ts     # Redux ストア
+│       │   └── 📄 router.tsx   # React Router設定
+│       │
+│       ├── 📂 components/      # 共通コンポーネント
+│       │   ├── 📂 ui/          # UI基盤コンポーネント
+│       │   ├── 📂 layout/      # レイアウトコンポーネント
+│       │   └── 📂 common/      # 汎用コンポーネント
+│       │
+│       ├── 📂 features/        # 機能別コード
+│       │   ├── 📂 search/      # 検索機能
+│       │   │   ├── 📂 api/     # API呼び出し
+│       │   │   ├── 📂 components/ # 検索コンポーネント
+│       │   │   ├── 📂 hooks/   # カスタムフック
+│       │   │   └── 📂 store/   # Redux スライス
+│       │   ├── 📂 movies/      # 映画機能
+│       │   ├── 📂 tv/          # TV番組機能
+│       │   └── 📂 reviews/     # レビュー機能
+│       │
+│       ├── 📂 hooks/           # 共通カスタムフック
+│       │   ├── 📄 useApi.ts
+│       │   └── 📄 useDebounce.ts
+│       │
+│       ├── 📂 lib/             # ライブラリ設定
+│       │   ├── 📄 api.ts       # APIクライアント
+│       │   ├── 📄 axios.ts     # Axios設定
+│       │   └── 📄 theme.ts     # MUIテーマ
+│       │
+│       ├── 📂 stores/          # グローバル状態管理
+│       │   ├── 📄 api.ts       # RTK Query API
+│       │   ├── 📄 auth.ts      # 認証スライス
+│       │   └── 📄 ui.ts        # UI状態スライス
+│       │
+│       ├── 📂 types/           # TypeScript型定義
+│       │   ├── 📄 api.ts       # API型
+│       │   ├── 📄 movie.ts     # 映画型
+│       │   └── 📄 common.ts    # 共通型
+│       │
+│       └── 📂 utils/           # ユーティリティ関数
+│           ├── 📄 format.ts    # フォーマット関数
+│           ├── 📄 validation.ts # バリデーション
+│           └── 📄 constants.ts # 定数
 │
 ├── 📂 docs/                    # ドキュメント
 │   ├── 📂 api/                 # API仕様書
 │   │   ├── 📄 README.md        # API概要
 │   │   └── 📄 endpoints.md     # エンドポイント詳細
 │   ├── 📄 setup.md             # セットアップガイド
+│   ├── 📄 frontend.md          # フロントエンド開発ガイド
 │   ├── 📄 examples.md          # 使用例
 │   └── 📄 architecture.md      # システム構成
 │
 └── 📂 scripts/                 # スクリプト類
     ├── 📄 build.sh             # ビルドスクリプト
     ├── 📄 test.sh              # テストスクリプト
+    ├── 📄 dev.sh               # 開発環境起動
     └── 📄 deploy.sh            # デプロイスクリプト
 ```
 
 ## 🧪 テスト
 
+### バックエンド
 ```bash
 # 全テスト実行
 go test ./...
@@ -222,15 +301,51 @@ go test ./internal/handlers/
 go test -bench=. ./...
 ```
 
+### フロントエンド
+```bash
+cd frontend
+
+# 単体テスト
+npm run test
+
+# E2Eテスト
+npm run test:e2e
+
+# カバレッジ確認
+npm run test:coverage
+
+# 型チェック
+npm run type-check
+
+# Lint
+npm run lint
+```
+
 ## 🚀 デプロイ
 
 ### ローカル開発環境
 
 ```bash
-# 開発サーバー起動（ホットリロード）
+# 開発サーバー起動（フロント・バック同時）
+make dev
+
+# 個別起動
+# バックエンド
 go run main.go
 
-# ビルド
+# フロントエンド
+cd frontend && npm run dev
+```
+
+### プロダクションビルド
+
+```bash
+# フロントエンドビルド
+cd frontend
+npm run build
+
+# バックエンドビルド
+cd ..
 go build -o movie-api main.go
 
 # 実行
@@ -251,7 +366,7 @@ docker run -p 8080:8080 --env-file .env movie-api
 
 ```bash
 # 本番用ビルド
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o movie-api main.go
+make build
 
 # systemdサービス登録
 sudo systemctl enable movie-api
@@ -264,9 +379,25 @@ sudo systemctl start movie-api
 |---|---|
 | [API仕様書](docs/api/README.md) | REST APIの詳細仕様 |
 | [セットアップガイド](docs/setup.md) | 環境構築・インストール手順 |
+| [フロントエンド開発ガイド](docs/frontend.md) | React開発のベストプラクティス |
 | [使用例](docs/examples.md) | 実践的なAPI利用例 |
 | [システム構成](docs/architecture.md) | アーキテクチャ設計 |
 | [開発フロー](README.github.md) | ブランチ戦略・コミット規約 |
+
+## 🎨 開発ガイドライン
+
+### フロントエンド
+- **コンポーネント設計**: bulletproof-react のベストプラクティスに準拠
+- **状態管理**: Redux Toolkit を使用、機能別にスライスを分割
+- **スタイリング**: Tailwind CSS + MUI の組み合わせ
+- **型安全性**: TypeScript strict mode で開発
+- **テスト**: React Testing Library + Vitest を使用
+
+### コーディング規約
+- **命名規則**: ケバブケース（ファイル・フォルダ）、キャメルケース（変数・関数）
+- **インポート**: 絶対パス（`@/` エイリアス使用）
+- **コンポーネント**: 単一責任の原則を守る
+- **フック**: カスタムフックで再利用可能なロジックを抽出
 
 ## 🤝 コントリビューション
 
@@ -291,6 +422,12 @@ fix: 🐛 #20 レスポンス形式のエラーを修正
 
 # ドキュメント更新
 docs: 📝 #23 API仕様書を更新
+
+# フロントエンド機能追加
+feat(frontend): ✨ React19対応のコンポーネント追加
+
+# スタイリング改善
+style: 💄 Tailwind4対応のダークモード実装
 ```
 
 ## 🛡️ ライセンス
@@ -307,6 +444,8 @@ docs: 📝 #23 API仕様書を更新
 
 - **[The Movie Database (TMDb)](https://www.themoviedb.org/)**: 豊富な映画・TV番組データの提供
 - **[Go Team](https://golang.org/)**: 優れたプログラミング言語の開発
+- **[React Team](https://react.dev/)**: モダンUIライブラリの開発
+- **[bulletproof-react](https://github.com/alan2207/bulletproof-react)**: Reactベストプラクティスの指針
 - **オープンソースコミュニティ**: 多くのライブラリとツールの提供
 
 ---

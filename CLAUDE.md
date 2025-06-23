@@ -33,6 +33,77 @@ Build a modern movie and TV show information application combining Go backend AP
 - **bulletproof-react** - React best practices
 - **Feature-based structure** - Scalable directory organization  
 - **Type safety** - TypeScript strict mode development
+- **Test-Driven Development (TDD)** - Write tests first, then implement
+
+### Development Methodology: TDD (Test-Driven Development)
+
+**TDD Process (Red-Green-Refactor):**
+1. **Red** - Write a failing test that describes the desired functionality
+2. **Green** - Write minimal code to make the test pass
+3. **Refactor** - Clean up code while keeping tests passing
+
+**TDD Guidelines:**
+- Always write tests BEFORE implementing functionality
+- Start with the simplest failing test case
+- Write only enough code to make the test pass
+- Refactor for better code quality after tests pass
+- Maintain high test coverage (aim for 80%+)
+
+**Testing Strategy:**
+- **Unit Tests** - Test individual functions/methods in isolation
+- **Integration Tests** - Test component interactions
+- **API Tests** - Test HTTP endpoints and responses
+- **Contract Tests** - Verify API contracts between services
+
+**Test Organization:**
+```
+backend/
+├── internal/
+│   ├── config/
+│   │   ├── config.go
+│   │   └── config_test.go
+│   ├── services/
+│   │   ├── tmdb_client.go
+│   │   └── tmdb_client_test.go
+│   └── handlers/
+│       ├── movie_handler.go
+│       └── movie_handler_test.go
+└── tests/
+    ├── integration/     # Integration tests
+    └── fixtures/        # Test data fixtures
+
+frontend/
+├── src/
+│   ├── features/
+│   │   └── search/
+│   │       ├── components/
+│   │       │   ├── SearchForm.tsx
+│   │       │   └── SearchForm.test.tsx
+│   │       └── hooks/
+│   │           ├── useMovieSearch.ts
+│   │           └── useMovieSearch.test.ts
+└── tests/
+    ├── __mocks__/       # Mock implementations
+    └── utils/           # Test utilities
+```
+
+**Test Naming Convention:**
+- Go: `TestFunctionName_Scenario_ExpectedResult`
+- TypeScript: `describe('Component/Function') { it('should do something when condition') }`
+
+**Example TDD Workflow:**
+1. Create failing test for new feature
+2. Run test to confirm it fails (Red)
+3. Implement minimal code to pass test (Green)
+4. Refactor for better design (Refactor)
+5. Repeat for next requirement
+
+**Test Requirements:**
+- Every new function/method must have unit tests
+- API endpoints must have integration tests
+- Critical business logic must have comprehensive test coverage
+- Tests should be fast, isolated, and deterministic
+- Use descriptive test names that explain the behavior being tested
 
 ### Directory Structure
 
@@ -209,9 +280,6 @@ export interface MovieSearchProps {}
 export const API_ENDPOINTS = {}
 ```
 
-
-
-
 ## Common Issues & Troubleshooting
 
 1. **CORS errors**: Check `internal/middleware/cors.go` configuration
@@ -246,3 +314,8 @@ export const API_ENDPOINTS = {}
 - Japanese project documentation should be maintained in separate files (README.md, README.github.md)
 - Code comments and commit messages can be in Japanese as per project team preference
 - This approach balances international accessibility with local team communication needs
+
+## Issue Memories
+
+### GitHub Issue Tracking
+- 29 fixのissueをお願い。README.github.mdの手順通りに

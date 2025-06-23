@@ -2,7 +2,7 @@
 
 Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作品検索、詳細情報、キャスト情報、レビュー、トレンド情報など包括的な機能を提供します。
 
-![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![TMDb](https://img.shields.io/badge/TMDb-API-01b4e4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
@@ -19,7 +19,7 @@ Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作�
 
 ### 必要な環境
 
-- **Go**: 1.21以上
+- **Go**: 1.24
 - **TMDb API**: Read Access Token（無料取得可能）
 - **Git**: バージョン管理
 

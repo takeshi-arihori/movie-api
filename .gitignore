@@ -1,0 +1,45 @@
+# Environment files
+.env
+backend/.env
+frontend/.env
+
+# Go
+backend/vendor/
+backend/*.log
+backend/tmp/
+
+# Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+build/

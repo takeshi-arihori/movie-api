@@ -1,0 +1,56 @@
+# Debug version of Dockerfile with Delve debugger support
+FROM --platform=linux/amd64 golang:1.24-alpine AS debug-builder
+
+# Install debugging tools and build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Install Delve debugger
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod ./
+COPY go.sum* ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the application with debug symbols (no optimization)
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o main .
+
+# Final debug stage
+FROM --platform=linux/amd64 alpine:latest
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates tzdata
+
+# Create non-root user
+RUN adduser -D -s /bin/sh appuser
+
+WORKDIR /app
+
+# Copy binary and Delve from builder stage
+COPY --from=debug-builder /go/bin/dlv /usr/local/bin/dlv
+COPY --from=debug-builder /app/main .
+
+# Change ownership and permissions
+RUN chown appuser:appuser /app/main && chmod +x /app/main
+RUN chown appuser:appuser /usr/local/bin/dlv && chmod +x /usr/local/bin/dlv
+
+# Switch to non-root user
+USER appuser
+
+# Expose application port, Delve port, and pprof port
+EXPOSE 8080 2345 6060
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Start application directly (Delve can attach later)
+CMD ["/app/main"]

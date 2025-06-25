@@ -43,3 +43,5 @@ node_modules/
 # Build outputs
 dist/
 build/backend/main
+backend/movie-api
+movie-api

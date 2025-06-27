@@ -7,12 +7,18 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/takeshi-arihori/movie-api/internal/config"
 	"github.com/takeshi-arihori/movie-api/internal/handlers"
 	"github.com/takeshi-arihori/movie-api/internal/services"
 )
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+	}
+	
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {

@@ -36,17 +36,23 @@ func main() {
 	// Initialize services
 	tmdbClient := services.NewTMDbClient(cfg)
 	searchHandler := handlers.NewSearchHandler(tmdbClient)
+	movieHandler := handlers.NewMovieHandler(tmdbClient)
+	reviewHandler := handlers.NewReviewHandler(tmdbClient)
 
 	// Setup router
-	router := setupRouter(searchHandler)
+	router := setupRouter(searchHandler, movieHandler, reviewHandler)
 
 	// Start server
 	addr := ":" + cfg.Server.Port
 	fmt.Printf("Server listening on %s\n", addr)
 	fmt.Println("Available endpoints:")
-	fmt.Println("  GET /api/v1/health     - Health check")
-	fmt.Println("  GET /api/v1/search     - Multi search (movies, TV shows, people)")
-	fmt.Println("  GET /health            - Simple health check")
+	fmt.Println("  GET /api/v1/health            - Health check")
+	fmt.Println("  GET /api/v1/search            - Multi search (movies, TV shows, people)")
+	fmt.Println("  GET /api/v1/movies/{id}       - Movie details")
+	fmt.Println("  GET /api/v1/movies/{id}/credits - Movie credits")
+	fmt.Println("  GET /api/v1/movies/{id}/reviews - Movie reviews")
+	fmt.Println("  GET /api/v1/tv/{id}/reviews   - TV show reviews")
+	fmt.Println("  GET /health                   - Simple health check")
 	
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
@@ -54,7 +60,7 @@ func main() {
 }
 
 // setupRouter configures and returns the HTTP router
-func setupRouter(searchHandler *handlers.SearchHandler) *mux.Router {
+func setupRouter(searchHandler *handlers.SearchHandler, movieHandler *handlers.MovieHandler, reviewHandler *handlers.ReviewHandler) *mux.Router {
 	router := mux.NewRouter()
 
 	// API v1 routes
@@ -64,6 +70,14 @@ func setupRouter(searchHandler *handlers.SearchHandler) *mux.Router {
 	api.HandleFunc("/search", searchHandler.Search).Methods("GET", "OPTIONS")
 	api.HandleFunc("/health", searchHandler.HealthCheck).Methods("GET", "OPTIONS")
 	api.HandleFunc("/search/suggestions", searchHandler.GetSearchSuggestions).Methods("GET", "OPTIONS")
+
+	// Movie endpoints
+	api.HandleFunc("/movies/{id:[0-9]+}", movieHandler.GetMovieDetails).Methods("GET", "OPTIONS")
+	api.HandleFunc("/movies/{id:[0-9]+}/credits", movieHandler.GetMovieCredits).Methods("GET", "OPTIONS")
+	api.HandleFunc("/movies/{id:[0-9]+}/reviews", reviewHandler.GetMovieReviews).Methods("GET", "OPTIONS")
+
+	// TV show endpoints
+	api.HandleFunc("/tv/{id:[0-9]+}/reviews", reviewHandler.GetTVReviews).Methods("GET", "OPTIONS")
 
 	// Legacy health check endpoint (for compatibility)
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

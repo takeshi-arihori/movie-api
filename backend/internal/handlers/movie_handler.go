@@ -3,7 +3,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -220,29 +219,3 @@ func (h *MovieHandler) GetMovieReviews(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, movieReviews)
 }
 
-// writeJSONResponse writes a JSON response with the given status code
-func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Printf("Failed to encode JSON response: %v", err)
-	}
-}
-
-// writeErrorResponse writes an error response
-func writeErrorResponse(w http.ResponseWriter, statusCode int, errorType, message string) {
-	errorResp := ErrorResponse{
-		Error:   errorType,
-		Message: message,
-		Code:    statusCode,
-	}
-	writeJSONResponse(w, statusCode, errorResp)
-}
-
-// ErrorResponse represents an API error response
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-	Code    int    `json:"code"`
-}

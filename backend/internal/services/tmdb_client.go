@@ -314,6 +314,66 @@ func (c *TMDbClient) GetTVShowReviews(ctx context.Context, tvID int, page int) (
 	return &result, nil
 }
 
+// GetPersonMovieCredits retrieves movie credits for a specific person
+func (c *TMDbClient) GetPersonMovieCredits(ctx context.Context, personID int) (*models.PersonMovieCredits, error) {
+	if personID <= 0 {
+		return nil, fmt.Errorf("invalid person ID: %d", personID)
+	}
+
+	endpoint := fmt.Sprintf("/person/%d/movie_credits", personID)
+	resp, err := c.makeRequest(ctx, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get person movie credits request failed: %w", err)
+	}
+
+	var result models.PersonMovieCredits
+	if err := c.handleResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("get person movie credits response handling failed: %w", err)
+	}
+
+	return &result, nil
+}
+
+// GetPersonTVCredits retrieves TV credits for a specific person
+func (c *TMDbClient) GetPersonTVCredits(ctx context.Context, personID int) (*models.PersonTVCredits, error) {
+	if personID <= 0 {
+		return nil, fmt.Errorf("invalid person ID: %d", personID)
+	}
+
+	endpoint := fmt.Sprintf("/person/%d/tv_credits", personID)
+	resp, err := c.makeRequest(ctx, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get person TV credits request failed: %w", err)
+	}
+
+	var result models.PersonTVCredits
+	if err := c.handleResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("get person TV credits response handling failed: %w", err)
+	}
+
+	return &result, nil
+}
+
+// GetPersonCombinedCredits retrieves combined movie and TV credits for a specific person
+func (c *TMDbClient) GetPersonCombinedCredits(ctx context.Context, personID int) (*models.PersonCombinedCredits, error) {
+	if personID <= 0 {
+		return nil, fmt.Errorf("invalid person ID: %d", personID)
+	}
+
+	endpoint := fmt.Sprintf("/person/%d/combined_credits", personID)
+	resp, err := c.makeRequest(ctx, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get person combined credits request failed: %w", err)
+	}
+
+	var result models.PersonCombinedCredits
+	if err := c.handleResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("get person combined credits response handling failed: %w", err)
+	}
+
+	return &result, nil
+}
+
 // GetPopularMovies retrieves popular movies
 func (c *TMDbClient) GetPopularMovies(ctx context.Context, page int) (*models.PopularMovies, error) {
 	params := url.Values{}

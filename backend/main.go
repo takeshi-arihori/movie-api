@@ -38,9 +38,10 @@ func main() {
 	searchHandler := handlers.NewSearchHandler(tmdbClient)
 	movieHandler := handlers.NewMovieHandler(tmdbClient)
 	reviewHandler := handlers.NewReviewHandler(tmdbClient)
+	personHandler := handlers.NewPersonHandler(tmdbClient)
 
 	// Setup router
-	router := setupRouter(searchHandler, movieHandler, reviewHandler)
+	router := setupRouter(searchHandler, movieHandler, reviewHandler, personHandler)
 
 	// Start server
 	addr := ":" + cfg.Server.Port
@@ -52,6 +53,10 @@ func main() {
 	fmt.Println("  GET /api/v1/movies/{id}/credits - Movie credits")
 	fmt.Println("  GET /api/v1/movies/{id}/reviews - Movie reviews")
 	fmt.Println("  GET /api/v1/tv/{id}/reviews   - TV show reviews")
+	fmt.Println("  GET /api/v1/people/{id}       - Person details")
+	fmt.Println("  GET /api/v1/people/{id}/movie_credits - Person movie credits")
+	fmt.Println("  GET /api/v1/people/{id}/tv_credits - Person TV credits")
+	fmt.Println("  GET /api/v1/people/{id}/combined_credits - Person combined credits")
 	fmt.Println("  GET /health                   - Simple health check")
 	
 	if err := http.ListenAndServe(addr, router); err != nil {
@@ -60,7 +65,7 @@ func main() {
 }
 
 // setupRouter configures and returns the HTTP router
-func setupRouter(searchHandler *handlers.SearchHandler, movieHandler *handlers.MovieHandler, reviewHandler *handlers.ReviewHandler) *mux.Router {
+func setupRouter(searchHandler *handlers.SearchHandler, movieHandler *handlers.MovieHandler, reviewHandler *handlers.ReviewHandler, personHandler *handlers.PersonHandler) *mux.Router {
 	router := mux.NewRouter()
 
 	// API v1 routes
@@ -78,6 +83,12 @@ func setupRouter(searchHandler *handlers.SearchHandler, movieHandler *handlers.M
 
 	// TV show endpoints
 	api.HandleFunc("/tv/{id:[0-9]+}/reviews", reviewHandler.GetTVReviews).Methods("GET", "OPTIONS")
+
+	// Person endpoints
+	api.HandleFunc("/people/{id:[0-9]+}", personHandler.GetPersonDetails).Methods("GET", "OPTIONS")
+	api.HandleFunc("/people/{id:[0-9]+}/movie_credits", personHandler.GetPersonMovieCredits).Methods("GET", "OPTIONS")
+	api.HandleFunc("/people/{id:[0-9]+}/tv_credits", personHandler.GetPersonTVCredits).Methods("GET", "OPTIONS")
+	api.HandleFunc("/people/{id:[0-9]+}/combined_credits", personHandler.GetPersonCombinedCredits).Methods("GET", "OPTIONS")
 
 	// Legacy health check endpoint (for compatibility)
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

@@ -547,14 +547,6 @@ func TestWriteErrorResponse(t *testing.T) {
 }
 
 // Helper functions for pointer types
-func stringPtr(s string) *string {
-	return &s
-}
-
-func intPtr(i int) *int {
-	return &i
-}
-
 func float64Ptr(f float64) *float64 {
 	return &f
 }

@@ -392,12 +392,3 @@ func TestMovieHandler_CORS(t *testing.T) {
 		}
 	}
 }
-
-// Helper functions
-func stringPtr(s string) *string {
-	return &s
-}
-
-func intPtr(i int) *int {
-	return &i
-}

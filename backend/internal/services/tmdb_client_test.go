@@ -479,6 +479,343 @@ func TestGetTrendingMovies(t *testing.T) {
 	}
 }
 
+// TestMultiSearch tests multi-search functionality
+func TestMultiSearch(t *testing.T) {
+	mockResponse := models.MultiSearchResponse{
+		Page: 1,
+		Results: []models.MultiSearchResult{
+			{
+				ID:               550,
+				MediaType:        models.SearchItemTypeMovie,
+				Popularity:       61.416,
+				Title:            stringPtr("Fight Club"),
+				OriginalTitle:    stringPtr("Fight Club"),
+				OriginalLanguage: stringPtr("en"),
+				Overview:         stringPtr("A ticking-time-bomb insomniac..."),
+				VoteAverage:      float64Ptr(8.4),
+				VoteCount:        intPtr(26280),
+			},
+			{
+				ID:               1396,
+				MediaType:        models.SearchItemTypeTV,
+				Popularity:       449.316,
+				Name:             stringPtr("Breaking Bad"),
+				OriginalName:     stringPtr("Breaking Bad"),
+				OriginalLanguage: stringPtr("en"),
+				Overview:         stringPtr("A high school chemistry teacher..."),
+				VoteAverage:      float64Ptr(8.9),
+				VoteCount:        intPtr(12859),
+			},
+			{
+				ID:                 819,
+				MediaType:          models.SearchItemTypePerson,
+				Popularity:         7.861,
+				Name:               stringPtr("Edward Norton"),
+				KnownForDepartment: stringPtr("Acting"),
+				Gender:             intPtr(2),
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 3,
+	}
+
+	responses := map[string]interface{}{
+		"/search/multi": mockResponse,
+	}
+
+	server := createMockServer(t, responses)
+	defer server.Close()
+
+	client := createTestClient(server.URL)
+	ctx := context.Background()
+
+	// Test successful multi-search
+	result, err := client.MultiSearch(ctx, "test query", 1, "en-US")
+	if err != nil {
+		t.Fatalf("MultiSearch failed: %v", err)
+	}
+
+	if len(result.Results) != 3 {
+		t.Errorf("Expected 3 results, got %d", len(result.Results))
+	}
+
+	// Check movie result
+	movieResult := result.Results[0]
+	if movieResult.MediaType != models.SearchItemTypeMovie {
+		t.Errorf("Expected media type movie, got %s", movieResult.MediaType)
+	}
+	if movieResult.Title == nil || *movieResult.Title != "Fight Club" {
+		t.Errorf("Expected title 'Fight Club', got %v", movieResult.Title)
+	}
+
+	// Check TV result
+	tvResult := result.Results[1]
+	if tvResult.MediaType != models.SearchItemTypeTV {
+		t.Errorf("Expected media type tv, got %s", tvResult.MediaType)
+	}
+	if tvResult.Name == nil || *tvResult.Name != "Breaking Bad" {
+		t.Errorf("Expected name 'Breaking Bad', got %v", tvResult.Name)
+	}
+
+	// Check person result
+	personResult := result.Results[2]
+	if personResult.MediaType != models.SearchItemTypePerson {
+		t.Errorf("Expected media type person, got %s", personResult.MediaType)
+	}
+	if personResult.Name == nil || *personResult.Name != "Edward Norton" {
+		t.Errorf("Expected name 'Edward Norton', got %v", personResult.Name)
+	}
+
+	// Test empty query
+	_, err = client.MultiSearch(ctx, "", 1, "en-US")
+	if err == nil {
+		t.Error("Expected error for empty query, got nil")
+	}
+}
+
+// TestSearchByType tests type-specific search functionality
+func TestSearchByType(t *testing.T) {
+	// Movie search response
+	movieResponse := models.MovieSearchResponse{
+		Page: 1,
+		Results: []models.Movie{
+			{
+				ID:               550,
+				Title:            "Fight Club",
+				OriginalTitle:    "Fight Club",
+				OriginalLanguage: "en",
+				Overview:         "A ticking-time-bomb insomniac...",
+				VoteAverage:      8.4,
+				VoteCount:        26280,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	// TV search response
+	tvResponse := models.TVSearchResponse{
+		Page: 1,
+		Results: []models.TVShow{
+			{
+				ID:               1396,
+				Name:             "Breaking Bad",
+				OriginalName:     "Breaking Bad",
+				OriginalLanguage: "en",
+				Overview:         "A high school chemistry teacher...",
+				VoteAverage:      8.9,
+				VoteCount:        12859,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	// Person search response
+	personResponse := models.PersonSearchResponse{
+		Page: 1,
+		Results: []models.Person{
+			{
+				ID:                 819,
+				Name:               "Edward Norton",
+				KnownForDepartment: "Acting",
+				Gender:             2,
+				Popularity:         7.861,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	responses := map[string]interface{}{
+		"/search/movie":  movieResponse,
+		"/search/tv":     tvResponse,
+		"/search/person": personResponse,
+	}
+
+	server := createMockServer(t, responses)
+	defer server.Close()
+
+	client := createTestClient(server.URL)
+	ctx := context.Background()
+
+	// Test movie search
+	movieResult, err := client.SearchByType(ctx, "movie", "Fight Club", 1, "en-US")
+	if err != nil {
+		t.Fatalf("SearchByType (movie) failed: %v", err)
+	}
+	if len(movieResult.Results) != 1 {
+		t.Errorf("Expected 1 movie result, got %d", len(movieResult.Results))
+	}
+	if movieResult.Results[0].MediaType != models.SearchItemTypeMovie {
+		t.Errorf("Expected media type movie, got %s", movieResult.Results[0].MediaType)
+	}
+
+	// Test TV search
+	tvResult, err := client.SearchByType(ctx, "tv", "Breaking Bad", 1, "en-US")
+	if err != nil {
+		t.Fatalf("SearchByType (tv) failed: %v", err)
+	}
+	if len(tvResult.Results) != 1 {
+		t.Errorf("Expected 1 TV result, got %d", len(tvResult.Results))
+	}
+	if tvResult.Results[0].MediaType != models.SearchItemTypeTV {
+		t.Errorf("Expected media type tv, got %s", tvResult.Results[0].MediaType)
+	}
+
+	// Test person search
+	personResult, err := client.SearchByType(ctx, "person", "Edward Norton", 1, "en-US")
+	if err != nil {
+		t.Fatalf("SearchByType (person) failed: %v", err)
+	}
+	if len(personResult.Results) != 1 {
+		t.Errorf("Expected 1 person result, got %d", len(personResult.Results))
+	}
+	if personResult.Results[0].MediaType != models.SearchItemTypePerson {
+		t.Errorf("Expected media type person, got %s", personResult.Results[0].MediaType)
+	}
+
+	// Test invalid search type (should fall back to multi-search)
+	// Add multi-search response to mock server
+	responses["/search/multi"] = models.MultiSearchResponse{
+		Page:         1,
+		Results:      []models.MultiSearchResult{},
+		TotalPages:   1,
+		TotalResults: 0,
+	}
+	
+	multiResult, err := client.SearchByType(ctx, "invalid", "test", 1, "en-US")
+	if err != nil {
+		t.Fatalf("SearchByType (invalid type) failed: %v", err)
+	}
+	// Should work because it falls back to MultiSearch
+	if multiResult == nil {
+		t.Error("Expected result for invalid type (fallback to multi-search), got nil")
+	}
+}
+
+// TestConvertMovieSearchToMultiSearch tests movie search conversion
+func TestConvertMovieSearchToMultiSearch(t *testing.T) {
+	client := createTestClient("http://test.com")
+
+	movieResponse := &models.MovieSearchResponse{
+		Page: 1,
+		Results: []models.Movie{
+			{
+				ID:               550,
+				Title:            "Fight Club",
+				OriginalTitle:    "Fight Club",
+				OriginalLanguage: "en",
+				Adult:            false,
+				VoteAverage:      8.4,
+				VoteCount:        26280,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	result := client.convertMovieSearchToMultiSearch(movieResponse)
+
+	if result.Page != 1 {
+		t.Errorf("Expected page 1, got %d", result.Page)
+	}
+	if len(result.Results) != 1 {
+		t.Errorf("Expected 1 result, got %d", len(result.Results))
+	}
+
+	movie := result.Results[0]
+	if movie.MediaType != models.SearchItemTypeMovie {
+		t.Errorf("Expected media type movie, got %s", movie.MediaType)
+	}
+	if movie.Title == nil || *movie.Title != "Fight Club" {
+		t.Errorf("Expected title 'Fight Club', got %v", movie.Title)
+	}
+	if movie.Adult == nil || *movie.Adult != false {
+		t.Errorf("Expected adult false, got %v", movie.Adult)
+	}
+}
+
+// TestConvertTVSearchToMultiSearch tests TV search conversion
+func TestConvertTVSearchToMultiSearch(t *testing.T) {
+	client := createTestClient("http://test.com")
+
+	tvResponse := &models.TVSearchResponse{
+		Page: 1,
+		Results: []models.TVShow{
+			{
+				ID:               1396,
+				Name:             "Breaking Bad",
+				OriginalName:     "Breaking Bad",
+				OriginalLanguage: "en",
+				Adult:            false,
+				VoteAverage:      8.9,
+				VoteCount:        12859,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	result := client.convertTVSearchToMultiSearch(tvResponse)
+
+	if result.Page != 1 {
+		t.Errorf("Expected page 1, got %d", result.Page)
+	}
+	if len(result.Results) != 1 {
+		t.Errorf("Expected 1 result, got %d", len(result.Results))
+	}
+
+	tv := result.Results[0]
+	if tv.MediaType != models.SearchItemTypeTV {
+		t.Errorf("Expected media type tv, got %s", tv.MediaType)
+	}
+	if tv.Name == nil || *tv.Name != "Breaking Bad" {
+		t.Errorf("Expected name 'Breaking Bad', got %v", tv.Name)
+	}
+}
+
+// TestConvertPersonSearchToMultiSearch tests person search conversion
+func TestConvertPersonSearchToMultiSearch(t *testing.T) {
+	client := createTestClient("http://test.com")
+
+	personResponse := &models.PersonSearchResponse{
+		Page: 1,
+		Results: []models.Person{
+			{
+				ID:                 819,
+				Name:               "Edward Norton",
+				KnownForDepartment: "Acting",
+				Adult:              false,
+				Gender:             2,
+				Popularity:         7.861,
+			},
+		},
+		TotalPages:   1,
+		TotalResults: 1,
+	}
+
+	result := client.convertPersonSearchToMultiSearch(personResponse)
+
+	if result.Page != 1 {
+		t.Errorf("Expected page 1, got %d", result.Page)
+	}
+	if len(result.Results) != 1 {
+		t.Errorf("Expected 1 result, got %d", len(result.Results))
+	}
+
+	person := result.Results[0]
+	if person.MediaType != models.SearchItemTypePerson {
+		t.Errorf("Expected media type person, got %s", person.MediaType)
+	}
+	if person.Name == nil || *person.Name != "Edward Norton" {
+		t.Errorf("Expected name 'Edward Norton', got %v", person.Name)
+	}
+	if person.Gender == nil || *person.Gender != 2 {
+		t.Errorf("Expected gender 2, got %v", person.Gender)
+	}
+}
+
 // Helper functions for pointer types
 func stringPtr(s string) *string {
 	return &s
@@ -486,4 +823,8 @@ func stringPtr(s string) *string {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func float64Ptr(f float64) *float64 {
+	return &f
 }

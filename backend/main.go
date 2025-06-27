@@ -7,18 +7,12 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/takeshi-arihori/movie-api/internal/config"
 	"github.com/takeshi-arihori/movie-api/internal/handlers"
 	"github.com/takeshi-arihori/movie-api/internal/services"
 )
 
 func main() {
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: Error loading .env file: %v", err)
-	}
-	
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
@@ -41,20 +35,18 @@ func main() {
 
 	// Initialize services
 	tmdbClient := services.NewTMDbClient(cfg)
-	movieHandler := handlers.NewMovieHandler(tmdbClient)
+	searchHandler := handlers.NewSearchHandler(tmdbClient)
 
 	// Setup router
-	router := setupRouter(movieHandler)
+	router := setupRouter(searchHandler)
 
 	// Start server
 	addr := ":" + cfg.Server.Port
 	fmt.Printf("Server listening on %s\n", addr)
 	fmt.Println("Available endpoints:")
-	fmt.Println("  GET /api/v1/health            - Health check")
-	fmt.Println("  GET /api/v1/movies/{id}       - Movie details")
-	fmt.Println("  GET /api/v1/movies/{id}/credits - Movie credits")
-	fmt.Println("  GET /api/v1/movies/{id}/reviews - Movie reviews")
-	fmt.Println("  GET /health                   - Simple health check")
+	fmt.Println("  GET /api/v1/health     - Health check")
+	fmt.Println("  GET /api/v1/search     - Multi search (movies, TV shows, people)")
+	fmt.Println("  GET /health            - Simple health check")
 	
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
@@ -62,24 +54,16 @@ func main() {
 }
 
 // setupRouter configures and returns the HTTP router
-func setupRouter(movieHandler *handlers.MovieHandler) *mux.Router {
+func setupRouter(searchHandler *handlers.SearchHandler) *mux.Router {
 	router := mux.NewRouter()
 
 	// API v1 routes
 	api := router.PathPrefix("/api/v1").Subrouter()
 
-	// Movie endpoints
-	api.HandleFunc("/movies/{id:[0-9]+}", movieHandler.GetMovieDetails).Methods("GET", "OPTIONS")
-	api.HandleFunc("/movies/{id:[0-9]+}/credits", movieHandler.GetMovieCredits).Methods("GET", "OPTIONS")
-	api.HandleFunc("/movies/{id:[0-9]+}/reviews", movieHandler.GetMovieReviews).Methods("GET", "OPTIONS")
-
-	// Health check endpoint
-	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"healthy","service":"movie-api","version":"1.0.0"}`))
-	}).Methods("GET", "OPTIONS")
+	// Search endpoints
+	api.HandleFunc("/search", searchHandler.Search).Methods("GET", "OPTIONS")
+	api.HandleFunc("/health", searchHandler.HealthCheck).Methods("GET", "OPTIONS")
+	api.HandleFunc("/search/suggestions", searchHandler.GetSearchSuggestions).Methods("GET", "OPTIONS")
 
 	// Legacy health check endpoint (for compatibility)
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

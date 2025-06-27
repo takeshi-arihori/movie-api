@@ -83,35 +83,35 @@ curl "http://localhost:8080/api/v1/trending?media_type=movie&time_window=week"
 
 ### 🔍 検索系エンドポイント
 
-| エンドポイント | メソッド | 説明 |
-|---|---|---|
-| `/api/v1/search` | GET | 映画・TV番組の統合検索 |
-| `/api/v1/discover` | GET | 条件指定による作品探索 |
+| エンドポイント     | メソッド | 説明                   |
+| ------------------ | -------- | ---------------------- |
+| `/api/v1/search`   | GET      | 映画・TV番組の統合検索 |
+| `/api/v1/discover` | GET      | 条件指定による作品探索 |
 
 ### 📋 詳細情報系エンドポイント
 
-| エンドポイント | メソッド | 説明 |
-|---|---|---|
-| `/api/v1/movies/{id}` | GET | 映画の詳細情報 |
-| `/api/v1/tv/{id}` | GET | TV番組の詳細情報 |
-| `/api/v1/movies/{id}/credits` | GET | 映画のキャスト・スタッフ情報 |
-| `/api/v1/person/{id}` | GET | 人物の詳細情報 |
+| エンドポイント                | メソッド | 説明                         |
+| ----------------------------- | -------- | ---------------------------- |
+| `/api/v1/movies/{id}`         | GET      | 映画の詳細情報               |
+| `/api/v1/tv/{id}`             | GET      | TV番組の詳細情報             |
+| `/api/v1/movies/{id}/credits` | GET      | 映画のキャスト・スタッフ情報 |
+| `/api/v1/person/{id}`         | GET      | 人物の詳細情報               |
 
 ### ⭐ レビュー・評価系エンドポイント
 
-| エンドポイント | メソッド | 説明 |
-|---|---|---|
-| `/api/v1/movies/{id}/reviews` | GET | 映画のレビュー一覧取得 |
-| `/api/v1/movies/{id}/reviews` | POST | 映画のレビュー投稿 |
-| `/api/v1/movies/{id}/rating` | GET | 映画の評価統計 |
+| エンドポイント                | メソッド | 説明                   |
+| ----------------------------- | -------- | ---------------------- |
+| `/api/v1/movies/{id}/reviews` | GET      | 映画のレビュー一覧取得 |
+| `/api/v1/movies/{id}/reviews` | POST     | 映画のレビュー投稿     |
+| `/api/v1/movies/{id}/rating`  | GET      | 映画の評価統計         |
 
 ### 🔥 トレンド・おすすめ系エンドポイント
 
-| エンドポイント | メソッド | 説明 |
-|---|---|---|
-| `/api/v1/trending` | GET | トレンド作品一覧 |
-| `/api/v1/movies/{id}/similar` | GET | 類似映画の推薦 |
-| `/api/v1/popular` | GET | 人気作品ランキング |
-| `/api/v1/top-rated` | GET | 高評価作品ランキング |
+| エンドポイント                | メソッド | 説明                 |
+| ----------------------------- | -------- | -------------------- |
+| `/api/v1/trending`            | GET      | トレンド作品一覧     |
+| `/api/v1/movies/{id}/similar` | GET      | 類似映画の推薦       |
+| `/api/v1/popular`             | GET      | 人気作品ランキング   |
+| `/api/v1/top-rated`           | GET      | 高評価作品ランキング |
 
 ### 🏥 システム系

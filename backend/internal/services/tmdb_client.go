@@ -403,3 +403,185 @@ func (c *TMDbClient) GetTrendingTVShows(ctx context.Context, timeWindow string, 
 
 	return &result, nil
 }
+
+// MultiSearch performs a multi-search across movies, TV shows, and people
+func (c *TMDbClient) MultiSearch(ctx context.Context, query string, page int, language string) (*models.MultiSearchResponse, error) {
+	if query == "" {
+		return nil, fmt.Errorf("search query cannot be empty")
+	}
+
+	params := url.Values{
+		"query": {query},
+	}
+
+	if page > 0 {
+		params.Set("page", strconv.Itoa(page))
+	}
+
+	if language != "" {
+		params.Set("language", language)
+	}
+
+	resp, err := c.makeRequest(ctx, "/search/multi", params)
+	if err != nil {
+		return nil, fmt.Errorf("multi search request failed: %w", err)
+	}
+
+	var result models.MultiSearchResponse
+	if err := c.handleResponse(resp, &result); err != nil {
+		return nil, fmt.Errorf("multi search response handling failed: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SearchByType performs a search filtered by media type (movie, tv, or person)
+func (c *TMDbClient) SearchByType(ctx context.Context, searchType, query string, page int, language string) (*models.MultiSearchResponse, error) {
+	if query == "" {
+		return nil, fmt.Errorf("search query cannot be empty")
+	}
+
+	var endpoint string
+	switch searchType {
+	case "movie":
+		endpoint = "/search/movie"
+	case "tv":
+		endpoint = "/search/tv"
+	case "person":
+		endpoint = "/search/person"
+	default:
+		return c.MultiSearch(ctx, query, page, language)
+	}
+
+	params := url.Values{
+		"query": {query},
+	}
+
+	if page > 0 {
+		params.Set("page", strconv.Itoa(page))
+	}
+
+	if language != "" {
+		params.Set("language", language)
+	}
+
+	resp, err := c.makeRequest(ctx, endpoint, params)
+	if err != nil {
+		return nil, fmt.Errorf("search by type request failed: %w", err)
+	}
+
+	// For type-specific searches, we need to convert the response to MultiSearchResponse
+	switch searchType {
+	case "movie":
+		var movieResult models.MovieSearchResponse
+		if err := c.handleResponse(resp, &movieResult); err != nil {
+			return nil, fmt.Errorf("movie search response handling failed: %w", err)
+		}
+		return c.convertMovieSearchToMultiSearch(&movieResult), nil
+
+	case "tv":
+		var tvResult models.TVSearchResponse
+		if err := c.handleResponse(resp, &tvResult); err != nil {
+			return nil, fmt.Errorf("TV search response handling failed: %w", err)
+		}
+		return c.convertTVSearchToMultiSearch(&tvResult), nil
+
+	case "person":
+		var personResult models.PersonSearchResponse
+		if err := c.handleResponse(resp, &personResult); err != nil {
+			return nil, fmt.Errorf("person search response handling failed: %w", err)
+		}
+		return c.convertPersonSearchToMultiSearch(&personResult), nil
+
+	default:
+		return nil, fmt.Errorf("unsupported search type: %s", searchType)
+	}
+}
+
+// convertMovieSearchToMultiSearch converts MovieSearchResponse to MultiSearchResponse
+func (c *TMDbClient) convertMovieSearchToMultiSearch(movieResult *models.MovieSearchResponse) *models.MultiSearchResponse {
+	results := make([]models.MultiSearchResult, len(movieResult.Results))
+	for i, movie := range movieResult.Results {
+		results[i] = models.MultiSearchResult{
+			ID:               movie.ID,
+			MediaType:        models.SearchItemTypeMovie,
+			Popularity:       movie.Popularity,
+			Adult:            &movie.Adult,
+			BackdropPath:     movie.BackdropPath,
+			GenreIDs:         movie.GenreIDs,
+			OriginalLanguage: &movie.OriginalLanguage,
+			OriginalTitle:    &movie.OriginalTitle,
+			Overview:         &movie.Overview,
+			PosterPath:       movie.PosterPath,
+			ReleaseDate:      movie.ReleaseDate,
+			Title:            &movie.Title,
+			Video:            &movie.Video,
+			VoteAverage:      &movie.VoteAverage,
+			VoteCount:        &movie.VoteCount,
+		}
+	}
+
+	return &models.MultiSearchResponse{
+		Page:         movieResult.Page,
+		Results:      results,
+		TotalPages:   movieResult.TotalPages,
+		TotalResults: movieResult.TotalResults,
+	}
+}
+
+// convertTVSearchToMultiSearch converts TVSearchResponse to MultiSearchResponse
+func (c *TMDbClient) convertTVSearchToMultiSearch(tvResult *models.TVSearchResponse) *models.MultiSearchResponse {
+	results := make([]models.MultiSearchResult, len(tvResult.Results))
+	for i, tv := range tvResult.Results {
+		results[i] = models.MultiSearchResult{
+			ID:               tv.ID,
+			MediaType:        models.SearchItemTypeTV,
+			Popularity:       tv.Popularity,
+			Adult:            &tv.Adult,
+			BackdropPath:     tv.BackdropPath,
+			GenreIDs:         tv.GenreIDs,
+			OriginalLanguage: &tv.OriginalLanguage,
+			OriginalName:     &tv.OriginalName,
+			Overview:         &tv.Overview,
+			PosterPath:       tv.PosterPath,
+			FirstAirDate:     tv.FirstAirDate,
+			Name:             &tv.Name,
+			OriginCountry:    tv.OriginCountry,
+			VoteAverage:      &tv.VoteAverage,
+			VoteCount:        &tv.VoteCount,
+		}
+	}
+
+	return &models.MultiSearchResponse{
+		Page:         tvResult.Page,
+		Results:      results,
+		TotalPages:   tvResult.TotalPages,
+		TotalResults: tvResult.TotalResults,
+	}
+}
+
+// convertPersonSearchToMultiSearch converts PersonSearchResponse to MultiSearchResponse
+func (c *TMDbClient) convertPersonSearchToMultiSearch(personResult *models.PersonSearchResponse) *models.MultiSearchResponse {
+	results := make([]models.MultiSearchResult, len(personResult.Results))
+	for i, person := range personResult.Results {
+		results[i] = models.MultiSearchResult{
+			ID:                 person.ID,
+			MediaType:          models.SearchItemTypePerson,
+			Popularity:         person.Popularity,
+			Adult:              &person.Adult,
+			Gender:             &person.Gender,
+			KnownFor:           person.KnownFor,
+			KnownForDepartment: &person.KnownForDepartment,
+			Name:               &person.Name,
+			OriginalName:       &person.OriginalName,
+			ProfilePath:        person.ProfilePath,
+		}
+	}
+
+	return &models.MultiSearchResponse{
+		Page:         personResult.Page,
+		Results:      results,
+		TotalPages:   personResult.TotalPages,
+		TotalResults: personResult.TotalResults,
+	}
+}

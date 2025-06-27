@@ -3,6 +3,11 @@ module github.com/takeshi-arihori/movie-api
 go 1.24.4
 
 require (
+	github.com/go-playground/validator/v10 v10.26.0
+	github.com/gorilla/mux v1.8.1
+)
+
+require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

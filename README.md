@@ -79,6 +79,11 @@ curl "http://localhost:8080/api/v1/trending?media_type=movie&time_window=week"
 
 フロントエンド開発サーバー起動後、ブラウザで `http://localhost:3000` を開いてModern Reactアプリをお試しください。
 
+## 🏗️ バックエンド設計
+
+- [設計判断（ADR）](docs/adr/)
+- [実装ロードマップ](docs/architecture/backend-roadmap.md)
+
 ## 📖 API仕様
 
 ### 🔍 検索系エンドポイント

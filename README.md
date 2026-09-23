@@ -1,6 +1,6 @@
 # 🎬 映画・TV番組API
 
-Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作品検索、詳細情報、キャスト情報、レビュー、トレンド情報など包括的な機能を提供します。
+GoとTMDb APIを使った映画・TV番組情報サービスを開発するプロジェクトです。
 
 ![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -9,6 +9,12 @@ Go言語とTMDb APIを活用した映画・TV番組情報提供APIです。作�
 ![MUI](https://img.shields.io/badge/MUI-5.0-007FFF?style=for-the-badge&logo=mui&logoColor=white)
 ![Redux](https://img.shields.io/badge/Redux-5.0-764ABC?style=for-the-badge&logo=redux&logoColor=white)
 ![TMDb](https://img.shields.io/badge/TMDb-API-01b4e4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
+
+## 🎯 目的
+
+映画・TV番組を探して詳細を確認できるAPIとデモアプリを作りながら、Goで保守しやすいWeb APIの設計・実装・テストを実践します。
+
+バックエンドは既存機能を保ちながら、chiへの移行とDDDによる責務分離を1ユースケースずつ進めます。非同期JobやCQRSは、具体的な利用要件が生じたときに導入を判断します。
 
 ## 🌟 主な機能
 
